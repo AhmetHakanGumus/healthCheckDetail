@@ -1,4 +1,4 @@
-using HealthChecks.UI.Client;
+ï»¿using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -17,20 +17,21 @@ var hc = builder.Services.AddHealthChecks()
         new CustomSqlHealthCheck(builder.Configuration.GetConnectionString("SqlServer")!, "SELECT 1"),
         tags: new[] { "ready", "db" })
 
-    // sqlserver: paketle gelen baðlantý kontrolü
+    // sqlserver: paketle gelen baÄŸlantÄ± kontrolÃ¼
     .AddSqlServer(
         connectionString: builder.Configuration.GetConnectionString("SqlServer")!,
         name: "sqlserver",
         healthQuery: "SELECT 1",
         tags: new[] { "ready", "db" })
 
-    // redis: Redis ping
-    .AddRedis(
-        redisConnectionString: builder.Configuration.GetConnectionString("Redis")!,
-        name: "redis",
-        tags: new[] { "ready", "cache" })
+// redis: Redis ping
+.AddRedis(
+    redisConnectionString: builder.Configuration.GetConnectionString("Redis")!,
+    name: "redis",
+    timeout: TimeSpan.FromSeconds(3),        //  eklendi
+    tags: new[] { "ready", "cache" })
 
-    // ApplicationWriteDbContext: EF Core context kontrolü
+    // ApplicationWriteDbContext: EF Core context kontrolÃ¼
     .AddDbContextCheck<ApplicationWriteDbContext>(
         name: "ApplicationWriteDbContext",
         tags: new[] { "ready", "db" })
