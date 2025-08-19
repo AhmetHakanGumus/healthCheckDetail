@@ -1,4 +1,5 @@
-﻿using HealthChecks.UI.Client;
+﻿using System;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -24,12 +25,12 @@ var hc = builder.Services.AddHealthChecks()
         healthQuery: "SELECT 1",
         tags: new[] { "ready", "db" })
 
-// redis: Redis ping
-.AddRedis(
-    redisConnectionString: builder.Configuration.GetConnectionString("Redis")!,
-    name: "redis",
-    timeout: TimeSpan.FromSeconds(3),        //  eklendi
-    tags: new[] { "ready", "cache" })
+    // redis: Redis ping
+    .AddRedis(
+        redisConnectionString: builder.Configuration.GetConnectionString("Redis")!,
+        name: "redis",
+        timeout: TimeSpan.FromSeconds(3),
+        tags: new[] { "ready", "cache" })
 
     // ApplicationWriteDbContext: EF Core context kontrolü
     .AddDbContextCheck<ApplicationWriteDbContext>(
@@ -37,7 +38,7 @@ var hc = builder.Services.AddHealthChecks()
         tags: new[] { "ready", "db" })
 
     // liveness
-    .AddCheck("self", () => HealthCheckResult.Healthy("App is running"), tags: new[] { "live" });
+    .AddCheck("self", () => HealthCheckResult.Healthy("Uygulama çalışıyor"), tags: new[] { "live" });
 
 // UI
 builder.Services.AddHealthChecksUI(setup =>
@@ -56,16 +57,21 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
     Predicate = r => r.Tags.Contains("live")
 });
+
+// ↓↓↓ Türkçe JSON için özel writer
 app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
     Predicate = r => r.Tags.Contains("ready"),
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    ResponseWriter = TurkishHealthResponseWriter.WriteAsync
 });
+
 app.MapHealthChecks("/health/details", new HealthCheckOptions
 {
     Predicate = _ => true,
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    ResponseWriter = TurkishHealthResponseWriter.WriteAsync
 });
+// ↑↑↑
+
 app.MapHealthChecksUI(o =>
 {
     o.UIPath = "/health-ui";
